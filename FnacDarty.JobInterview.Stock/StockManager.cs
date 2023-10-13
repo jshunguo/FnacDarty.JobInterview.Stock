@@ -14,7 +14,7 @@ namespace FnacDarty.JobInterview.Stock
         private readonly IProductRepository _productRepository;
         private readonly IStockMovementFactory _stockMovementFactory;
 
-        public StockManager(IStockMovementFactory stockMovementFactory, IProductFactory productFactory, IProductRepository productRepository, IStockMovementRepository stockMovementRepository) 
+        public StockManager(IProductFactory productFactory, IStockMovementFactory stockMovementFactory, IProductRepository productRepository, IStockMovementRepository stockMovementRepository) 
         { 
             _stockMovementRepository = stockMovementRepository;
             _productFactory = productFactory;
@@ -25,41 +25,74 @@ namespace FnacDarty.JobInterview.Stock
         private void CreateProduct(string productId)
         {
             var product = _productFactory.Get(productId);
-            _productRepository.Add(product);
+            _productRepository.AddProduct(product);
         }
 
-        private void CreateMovement(DateTime date, string label, string productId, long quantity)
+        private StockMovement CreateMovement(DateTime date, string label, string productId, long quantity)
         {
-            if (!_productRepository.Exists(productId))
+            if (!_productRepository.IsProductExisting(productId))
             {
                 CreateProduct(productId);
             }
 
-            var lastInventory = _stockMovementRepository.GetLatestInventoryForProduct(productId);
+            var lastInventory = _stockMovementRepository.GetLatestInventoryMovementForProduct(productId);
 
-            var stockManagement = _stockMovementFactory.GetStock(lastInventory, date, label, productId, quantity);
+            var stockMovement = _stockMovementFactory.GetStock(lastInventory, date, label, productId, quantity);
 
-            _stockMovementRepository.AddMovement(stockManagement);
+            return stockMovement;
         }
 
-        private void AddStockInventory(DateTime date, string productId, long quantity)
+        private IReadOnlyCollection<StockMovement> CreateMovements(DateTime date, string label, IDictionary<string, long> productQuantities)
         {
-            CreateMovement(date, null, productId, quantity);
-        }
+            var lastInventories = _stockMovementRepository.GetLatestInventoryMovementsUpToDate(date, productQuantities.Keys);
+            var inventoryByProduct = lastInventories.ToDictionary(i => i.Product.Id);
+            var result = new List<StockMovement>();
 
-        public void AddStock(DateTime date, string label, string productId, long quantity)
-        {
-            CreateMovement(date, label, productId, quantity);
-        }
+            bool inventoriesIsEmpty = inventoryByProduct.Count == 0;
 
-        public void AddMultipleStock(DateTime date, string label, IDictionary<string, long> products)
-        {
-            if (!_productRepository.Exists(products.Keys))
+            foreach (var productQuantity in productQuantities)
             {
-                products.ForEach(item => CreateProduct(item.Key));
+                if (inventoriesIsEmpty)
+                {
+                    result.Add(_stockMovementFactory.GetStock(default, date, label, productQuantity.Key, productQuantity.Value));
+                }
+                else if (inventoryByProduct.TryGetValue(productQuantity.Key, out var existingInventory))
+                {
+                    result.Add(_stockMovementFactory.GetStock(existingInventory, date, label, productQuantity.Key, productQuantity.Value));
+                }
             }
 
-            products.ForEach(product => CreateMovement(date, label, product.Key, product.Value));
+            return result;
+        }
+
+        public StockMovement AddMovement(DateTime date, string label, string productId, long quantity)
+        {
+            var stock = CreateMovement(date, label, productId, quantity);
+            _stockMovementRepository.AddMovement(stock);
+            return stock;
+        }
+
+        public IReadOnlyCollection<StockMovement> AddMultipleStock(DateTime date, string label, IDictionary<string, long> products)
+        {
+            var existingProductIds = _productRepository.FilterExistingProductIds(products.Keys);
+            var existingProductSet = new HashSet<string>(existingProductIds);
+            var currentProductSet = new HashSet<string>(products.Keys);
+
+            var missingProducts = currentProductSet.Except(existingProductSet).ToList();
+
+            if (missingProducts.Count > 0)
+            {
+                _productRepository.AddProducts(missingProducts.Select(p => new Product(p)));
+            }
+            
+            var stocks = CreateMovements(date, label, products);
+
+            if(stocks.Count > 0)
+            {
+                _stockMovementRepository.AddMovements(stocks);
+            }
+
+            return stocks;
         }
 
         public long GetCurrentStockForProduct(string productId)
@@ -69,43 +102,54 @@ namespace FnacDarty.JobInterview.Stock
 
         public IDictionary<string, long> GetProductsInStock()
         {
-            var stocks = _stockMovementRepository.GetByDate(DateTime.UtcNow.Date);
+            var movements = _stockMovementRepository.GetMovementsForDate(DateTime.UtcNow.Date);
+            var productByQuantityDictionary = new Dictionary<string, long>();
 
-            var currentStocks = new Dictionary<string, long>();
-
-            foreach (var stockMovement in stocks)
+            foreach (var movement in movements)
             {
-                if (!currentStocks.ContainsKey(stockMovement.Product.Id))
+                if (!productByQuantityDictionary.ContainsKey(movement.Product.Id))
                 {
-                    currentStocks[stockMovement.Product.Id] = 0;
+                    productByQuantityDictionary[movement.Product.Id] = 0;
                 }
 
-                currentStocks[stockMovement.Product.Id] += stockMovement.Quantity;
+                productByQuantityDictionary[movement.Product.Id] += movement.Quantity;
             }
 
-            return currentStocks;
+            return productByQuantityDictionary;
         }
 
         public long GetStockForProductAtDate(string productId, DateTime date)
         {
-            var stocks = _stockMovementRepository.GetByProductAndDate(productId, date);
-
+            var stocks = _stockMovementRepository.GetProductMovementsForDate(productId, date);
             return stocks.Sum(sm => sm.Quantity);
         }
 
         public long GetStockVariationForProduct(string productId, DateTime startDate, DateTime endDate)
         {
-            var stockStart = GetStockForProductAtDate(productId, startDate);
-            var stockEnd = GetStockForProductAtDate(productId, endDate);
+            var movements = _stockMovementRepository.GetProductMovementsBetweenDates(productId, startDate, endDate);
+            long startQuantity = 0;
+            long endQuantity = 0;
 
-            return stockEnd - stockStart;
+            foreach (var movement in movements)
+            {
+                if (movement.Date == startDate)
+                {
+                    startQuantity += movement.Quantity;
+                }
+                else if (movement.Date == endDate)
+                {
+                    endQuantity += movement.Quantity;
+                }
+            }
+
+            return endQuantity - startQuantity;
         }
 
         public long GetTotalProductsInStock()
         {
             var currentDate = DateTime.UtcNow.Date;
 
-            var stocks = _stockMovementRepository.GetByDate(currentDate);
+            var stocks = _stockMovementRepository.GetMovementsForDate(currentDate);
 
             return stocks.Sum(sm => sm.Quantity);
         }
@@ -120,7 +164,8 @@ namespace FnacDarty.JobInterview.Stock
 
                 if (quantity != stockValue)
                 {
-                    AddStockInventory(currentDate, productId, quantity - stockValue);
+                    var stock = CreateMovement(currentDate, null, productId, quantity - stockValue);
+                    _stockMovementRepository.AddMovement(stock);
                 }
             }
         }

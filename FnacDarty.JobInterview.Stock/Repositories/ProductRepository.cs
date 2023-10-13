@@ -6,22 +6,27 @@ namespace FnacDarty.JobInterview.Stock.Repositories
 {
     public class ProductRepository : IProductRepository
     {
-        public void Add(Product product)
+        public void AddProduct(Product product)
         {
             throw new NotImplementedException();
         }
 
-        public bool Exists(string productId)
+        public void AddProducts(IEnumerable<Product> products)
         {
             throw new NotImplementedException();
         }
 
-        public bool Exists(IEnumerable<string> productIds)
+        public bool IsProductExisting(string productId)
         {
             throw new NotImplementedException();
         }
 
-        public Product GetById(string productId)
+        public Product FindProductById(string productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<string> FilterExistingProductIds(IEnumerable<string> productIds)
         {
             throw new NotImplementedException();
         }

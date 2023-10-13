@@ -5,43 +5,67 @@ using FnacDarty.JobInterview.Stock.Entities;
 namespace FnacDarty.JobInterview.Stock.Repositories
 {
     /// <summary>
-    /// Repository des mouvements de stock
+    /// Fournit un ensemble de méthodes pour gérer et accéder aux mouvements de stock dans le système.
     /// </summary>
     public interface IStockMovementRepository 
     {
         /// <summary>
-        /// Ajoute un mouvement d'un ou plusieurs produits 
+        /// Ajoute un mouvement de stock au système.
         /// </summary>
         /// <param name="stockMovement"></param>
         void AddMovement(StockMovement stockMovement);
 
         /// <summary>
-        /// Lister les mouvements de stock pour un produit à une date spécifique
+        /// Ajoute une liste de mouvements de stock au système
+        /// </summary>
+        /// <param name="stockMovements"></param>
+        /// <returns></returns>
+        int AddMovements(IEnumerable<StockMovement> stockMovements);
+
+        /// <summary>
+        /// Recupère les mouvements de stock d'un produit à une date spécifique
         /// </summary>
         /// <param name="productId"></param>
         /// <param name="date"></param>
         /// <returns></returns>
-        IEnumerable<StockMovement> GetByProductAndDate(string productId, DateTime date);
+        IEnumerable<StockMovement> GetProductMovementsForDate(string productId, DateTime date);
 
         /// <summary>
-        /// Lister tous les mouvements de stock pour une date
+        /// Recupère tous les mouvements de stock pour une date specifique
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        IEnumerable<StockMovement> GetByDate(DateTime date);
+        IEnumerable<StockMovement> GetMovementsForDate(DateTime date);
 
         /// <summary>
-        /// Lister tous les mouvements de stock pour un produit
+        /// Recupère tous les mouvements de stock pour un produit
         /// </summary>
         /// <param name="product"></param>
         /// <returns></returns>
-        IEnumerable<StockMovement> GetByProduct(string productId);
+        IEnumerable<StockMovement> GetMovementsForProduct(string productId);
 
         /// <summary>
-        /// Obtenir le dernier mouvement d'inventaire pour un produit
+        /// Recupère le dernier mouvement d'inventaire pour un produit
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
-        StockMovement GetLatestInventoryForProduct(string productId);
+        StockMovement GetLatestInventoryMovementForProduct(string productId);
+
+        /// <summary>
+        /// Recupère les mouvements de stock d'un produit spécifique entre deux dates
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        IEnumerable<StockMovement> GetProductMovementsBetweenDates(string productId, DateTime startDate, DateTime endDate);
+
+        /// <summary>
+        /// Récupère les mouvements d'inventaire les plus récents pour une liste de produits jusqu'à une date spécifiée.
+        /// </summary>
+        /// <param name="date"></param>
+        /// <param name="productIds"></param>
+        /// <returns></returns>
+        IEnumerable<StockMovement> GetLatestInventoryMovementsUpToDate(DateTime date, IEnumerable<string> productIds);
     }
 }

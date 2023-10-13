@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FnacDarty.JobInterview.Stock.Entities;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace FnacDarty.JobInterview.Stock
     {
         public static void ForEach<T>(this IEnumerable<T> source, Action<T> actionPerform)
         {
+            if(source == null) throw new ArgumentNullException("source");
+
             foreach (var item in source)
             {
                 actionPerform(item);

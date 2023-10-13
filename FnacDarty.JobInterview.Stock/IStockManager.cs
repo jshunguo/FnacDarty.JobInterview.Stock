@@ -1,5 +1,4 @@
 ﻿using FnacDarty.JobInterview.Stock.Entities;
-using FnacDarty.JobInterview.Stock.Views;
 using System;
 using System.Collections.Generic;
 
@@ -17,15 +16,15 @@ namespace FnacDarty.JobInterview.Stock
         /// <param name="label"></param>
         /// <param name="productId"></param>
         /// <param name="quantity"></param>
-        void AddStock(DateTime date, string label, string productId, long quantity);
+        StockMovement AddMovement(DateTime date, string label, string productId, long quantity);
 
         /// <summary>
-        /// Ajoute des mouvements de stock pour plusieurs produits à une date donnée
+        /// Ajoute plusieurs mouvements de stock sur plusieurs produits à une date (mais avec un seul libellé)
         /// </summary>
         /// <param name="date"></param>
         /// <param name="label"></param>
-        /// <param name="products"></param>
-        void AddMultipleStock(DateTime date, string label, IDictionary<string,long> products);
+        /// <param name="productQuantities"></param>
+        IReadOnlyCollection<StockMovement> AddMultipleStock(DateTime date, string label, IDictionary<string,long> productQuantities);
 
         /// <summary>
         /// Obtient le stock d'un produit à une date spécifique.

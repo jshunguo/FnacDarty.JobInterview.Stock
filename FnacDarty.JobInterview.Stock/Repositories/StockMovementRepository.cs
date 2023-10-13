@@ -11,22 +11,37 @@ namespace FnacDarty.JobInterview.Stock.Repositories
             throw new NotImplementedException();
         }
 
-        public IEnumerable<StockMovement> GetByDate(DateTime date)
+        public int AddMovements(IEnumerable<StockMovement> stockMovements)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<StockMovement> GetByProduct(string productId)
+        public IEnumerable<StockMovement> GetProductMovementsBetweenDates(string productId, DateTime startDate, DateTime endDate)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<StockMovement> GetByProductAndDate(string productId, DateTime date)
+        public IEnumerable<StockMovement> GetMovementsForDate(DateTime date)
         {
             throw new NotImplementedException();
         }
 
-        public StockMovement GetLatestInventoryForProduct(string productId)
+        public IEnumerable<StockMovement> GetMovementsForProduct(string productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<StockMovement> GetProductMovementsForDate(string productId, DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        public StockMovement GetLatestInventoryMovementForProduct(string productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<StockMovement> GetLatestInventoryMovementsUpToDate(DateTime date, IEnumerable<string> productIds)
         {
             throw new NotImplementedException();
         }
