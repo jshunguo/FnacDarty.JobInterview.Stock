@@ -1,43 +1,44 @@
 ﻿using FnacDarty.JobInterview.Stock.Validators;
 using System;
-using System.Collections.Generic;
 
 namespace FnacDarty.JobInterview.Stock.Entities
 {
     /// <summary>
-    /// Représente un mouvement de produit avec date, libellé
+    /// Représente un mouvement de stock associé à un produit.
     /// </summary>
-    public struct StockMovement : IValidable<StockMovement>
+    public struct StockMovement : IEquatable<StockMovement>
     {
-        private const string InventoryName = "inventaire";
+        public const string InventoryName = "inventaire";
+
+        public static StockMovement DefaultInventory = new StockMovement(DateTime.MinValue.ToUniversalTime().Date, null, new Product("EAN1234"), 0);
 
         /// <summary>
-        /// Obtient ou definit l'identifiant du mouvement 
+        /// Obtient l'identifiant unique du mouvement de stock.
         /// </summary>
         public Guid Id { get; }
 
         /// <summary>
-        /// Obtient ou definit le libellé du <seealso cref="StockMovement"/>
+        /// Obtient le libellé descriptif du mouvement de stock.
         /// </summary>
         public string Label { get; }
 
         /// <summary>
-        /// Obtient ou definit la date d'execution du <seealso cref="StockMovement"/>
+        /// Obtient la date à laquelle le mouvement de stock a eu lieu.
         /// </summary>
         public DateTime Date { get; }
 
         /// <summary>
-        /// Obtient une valeur qui indique que c'est un inventaire
+        /// Indique si le mouvement de stock est de type "Inventaire".
         /// </summary>
-        public bool IsInventory { get;}
+        public bool IsInventory { get; }
 
         /// <summary>
-        /// Obtient le produit du <seealso cref="StockMovement"/>
+        /// Obtient le produit associé au mouvement de stock.
         /// </summary>
         public Product Product { get; }
 
         /// <summary>
-        /// Obtient la quantité du <seealso cref="StockMovement"/>
+        /// Obtient la quantité associée au mouvement de stock.
         /// </summary>
         public long Quantity { get; }
 
@@ -45,15 +46,20 @@ namespace FnacDarty.JobInterview.Stock.Entities
         {
             Id = Guid.NewGuid();
             Date = date;
-            Label = label;
-            IsInventory = string.Equals(label, InventoryName, StringComparison.OrdinalIgnoreCase);
+            IsInventory = string.IsNullOrEmpty(label) || string.Equals(label, InventoryName, StringComparison.OrdinalIgnoreCase);
             Product = product;
             Quantity = quantity;
+            Label = string.IsNullOrEmpty(label) ? InventoryName : label;
         }
 
-        public StockMovement(DateTime date, Product product,long quantity) : this(date, InventoryName, product, quantity)
+        public StockMovement(DateTime date, Product product, long quantity) : this(date, InventoryName, product, quantity)
         {
 
+        }
+
+        bool IEquatable<StockMovement>.Equals(StockMovement other)
+        {
+            return Equals(other);
         }
 
         public override bool Equals(object obj)
@@ -74,23 +80,6 @@ namespace FnacDarty.JobInterview.Stock.Entities
         public override int GetHashCode()
         {
             return HashCode.Combine(Date, Label, IsInventory, Product, Quantity);
-        }
-
-        IEnumerable<IValidator<StockMovement>> IValidable<StockMovement>.GetValidators()
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<IValidator<StockMovement>> GetValidators(StockMovement inventory)
-        {
-            if(IsInventory)
-            {
-                return new[] { new InventoryValidator(inventory) };
-            }
-            else
-            {
-                return new[] { new AddStockValidator(inventory.Date) };
-            }
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FnacDarty.JobInterview.Stock.Validators
 {
-    internal class EanValidator : IValidator<Product>
+    public class ProductValidator : IValidator<Product>
     {
         public ValidatorResult Validate(Product entity)
         {

@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace FnacDarty.JobInterview.Stock.Views
 {
-    public sealed class Client : IClient
+    public sealed class Client 
     {
         private readonly IStockManager _stockManager;
 
@@ -16,18 +16,7 @@ namespace FnacDarty.JobInterview.Stock.Views
 
         private IGridView CreateView(IEnumerable columns, IEnumerable values)
         {
-            var definition =  GridView.Definition;
-
-            foreach(var column in columns)
-            {
-                definition.AddColumn(column.ToString(), column.GetType());
-            }
-
-            var view = definition.CreateView();
-
-            view.Bind(values);
-
-            return view;
+           throw new NotImplementedException();
         }
 
         public IGridView GetCurrentStockForProduct(string productId)

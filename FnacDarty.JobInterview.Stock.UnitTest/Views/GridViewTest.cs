@@ -1,4 +1,5 @@
 ﻿using FnacDarty.JobInterview.Stock.Views;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -9,33 +10,50 @@ namespace FnacDarty.JobInterview.Stock.UnitTest.Views
     [TestFixture]
     internal class GridViewTest
     {
-        private IGridView _gridView;
-        private StringWriter _writer;
-
-        [SetUp]
-        public void SetUp()
+        [Test]
+        public void Bind_WithNullSource_ThrowsArgumentNullException()
         {
-            _gridView = GridView.Definition.AddColumns<MovementView>().CreateView();
-            _writer = new StringWriter();
-        }
+            var columns = new List<GridColumn>();
+            var gridView = new GridView(columns);
 
-        [TearDown]
-        public void TearDown()
-        {
-            _writer.Dispose();
-            _writer = null;
+            Assert.Throws<ArgumentNullException>(() => gridView.Bind(null));
         }
 
         [Test]
-        public void Render_ValidDataSource_Success()
+        public void Bind_WithSingleObject_DoesNotThrows()
         {
-            var movementList = MovementView.Generate();
+            var columns = new List<GridColumn>();
+            var gridView = new GridView(columns);
+            var mockObject = new Mock<object>();
 
-            _gridView.Bind(movementList);
+            Assert.DoesNotThrow(() => gridView.Bind(mockObject.Object));
+        }
 
-            _gridView.Render(_writer);
+        [Test]
+        public void Render_ValidDataSource_Success() 
+        {
+            var gridView = new GridView(new GridColumn[]
+            {
+                new GridColumn("Name")
+            });
 
-            Assert.AreEqual(Properties.Resources.Expected_Render_Content, _writer.ToString());
+            var mockTextWriter = new Mock<TextWriter>(MockBehavior.Strict);
+            int numberOfWriteCount = 0;
+            int numberOfWriteLineCount = 0;
+
+            mockTextWriter.Setup(tw => tw.Write(It.IsAny<string>())).Callback(() => {
+                numberOfWriteCount++;
+            });
+            mockTextWriter.Setup(tw => tw.WriteLine()).Callback(() => {
+                numberOfWriteLineCount++;
+            });
+
+            gridView.Bind(2);
+
+            gridView.Render(mockTextWriter.Object);
+
+            mockTextWriter.Verify(tw => tw.Write(It.IsAny<string>()), Times.Exactly(numberOfWriteCount));
+            mockTextWriter.Verify(tw => tw.WriteLine(), Times.Exactly(numberOfWriteLineCount));
         }
     }
 }

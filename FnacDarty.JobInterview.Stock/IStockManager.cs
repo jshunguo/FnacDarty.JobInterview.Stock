@@ -24,7 +24,7 @@ namespace FnacDarty.JobInterview.Stock
         /// <param name="date"></param>
         /// <param name="label"></param>
         /// <param name="productQuantities"></param>
-        IReadOnlyCollection<StockMovement> AddMultipleStock(DateTime date, string label, IDictionary<string,long> productQuantities);
+        IReadOnlyCollection<StockMovement> AddMultipleStock(DateTime date, string label, IDictionary<string, long> productQuantities);
 
         /// <summary>
         /// Obtient le stock d'un produit à une date spécifique.

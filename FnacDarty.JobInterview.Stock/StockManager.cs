@@ -14,8 +14,8 @@ namespace FnacDarty.JobInterview.Stock
         private readonly IProductRepository _productRepository;
         private readonly IStockMovementFactory _stockMovementFactory;
 
-        public StockManager(IProductFactory productFactory, IStockMovementFactory stockMovementFactory, IProductRepository productRepository, IStockMovementRepository stockMovementRepository) 
-        { 
+        public StockManager(IProductFactory productFactory, IStockMovementFactory stockMovementFactory, IProductRepository productRepository, IStockMovementRepository stockMovementRepository)
+        {
             _stockMovementRepository = stockMovementRepository;
             _productFactory = productFactory;
             _productRepository = productRepository;
@@ -37,7 +37,7 @@ namespace FnacDarty.JobInterview.Stock
 
             var lastInventory = _stockMovementRepository.GetLatestInventoryMovementForProduct(productId);
 
-            var stockMovement = _stockMovementFactory.GetStock(lastInventory, date, label, productId, quantity);
+            var stockMovement = _stockMovementFactory.Get(lastInventory, date, label, productId, quantity);
 
             return stockMovement;
         }
@@ -54,11 +54,11 @@ namespace FnacDarty.JobInterview.Stock
             {
                 if (inventoriesIsEmpty)
                 {
-                    result.Add(_stockMovementFactory.GetStock(default, date, label, productQuantity.Key, productQuantity.Value));
+                    result.Add(_stockMovementFactory.Get(default, date, label, productQuantity.Key, productQuantity.Value));
                 }
                 else if (inventoryByProduct.TryGetValue(productQuantity.Key, out var existingInventory))
                 {
-                    result.Add(_stockMovementFactory.GetStock(existingInventory, date, label, productQuantity.Key, productQuantity.Value));
+                    result.Add(_stockMovementFactory.Get(existingInventory, date, label, productQuantity.Key, productQuantity.Value));
                 }
             }
 
@@ -84,10 +84,10 @@ namespace FnacDarty.JobInterview.Stock
             {
                 _productRepository.AddProducts(missingProducts.Select(p => new Product(p)));
             }
-            
+
             var stocks = CreateMovements(date, label, products);
 
-            if(stocks.Count > 0)
+            if (stocks.Count > 0)
             {
                 _stockMovementRepository.AddMovements(stocks);
             }
@@ -156,18 +156,23 @@ namespace FnacDarty.JobInterview.Stock
 
         public void RegularizeStockForProduct(string productId, long quantity)
         {
-            if(quantity > 0)
+            if(quantity < 0)
             {
-                var currentDate = DateTime.UtcNow.Date;
-
-                var stockValue = GetStockForProductAtDate(productId, currentDate);
-
-                if (quantity != stockValue)
-                {
-                    var stock = CreateMovement(currentDate, null, productId, quantity - stockValue);
-                    _stockMovementRepository.AddMovement(stock);
-                }
+                throw new InvalidOperationException();
             }
+
+            var currentDate = DateTime.UtcNow.Date;
+
+            var stockValue = GetStockForProductAtDate(productId, currentDate);
+
+            if (quantity == stockValue)
+            {
+                throw new InvalidOperationException();
+            }
+
+            var stock = CreateMovement(currentDate, StockMovement.InventoryName, productId, quantity - stockValue);
+
+            _stockMovementRepository.AddMovement(stock);
         }
     }
 }

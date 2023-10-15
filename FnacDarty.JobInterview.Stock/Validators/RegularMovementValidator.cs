@@ -3,11 +3,11 @@ using System;
 
 namespace FnacDarty.JobInterview.Stock.Validators
 {
-    internal class AddStockValidator : IValidator<StockMovement>
+    public class RegularMovementValidator : IValidator<StockMovement>
     {
         private DateTime? _lastInventoryDate;
 
-        public AddStockValidator(DateTime? lastInventoryDate)
+        public RegularMovementValidator(DateTime? lastInventoryDate)
         {
             this._lastInventoryDate = lastInventoryDate;
         }

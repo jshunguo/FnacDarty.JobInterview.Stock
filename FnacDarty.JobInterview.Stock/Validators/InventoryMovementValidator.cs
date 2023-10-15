@@ -4,11 +4,11 @@ using System;
 
 namespace FnacDarty.JobInterview.Stock.Validators
 {
-    internal class InventoryValidator : IValidator<StockMovement>
+    public class InventoryMovementValidator : IValidator<StockMovement>
     {
         private StockMovement lastInventory;
 
-        public InventoryValidator(StockMovement lastInventory)
+        public InventoryMovementValidator(StockMovement lastInventory)
         {
             this.lastInventory = lastInventory;
         }

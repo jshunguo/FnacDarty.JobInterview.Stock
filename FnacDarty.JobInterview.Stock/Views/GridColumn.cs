@@ -1,19 +1,17 @@
-﻿using System;
+﻿using FnacDarty.JobInterview.Stock.Entities;
+using System;
 using System.Collections;
-using System.Runtime.InteropServices;
 
 namespace FnacDarty.JobInterview.Stock.Views
 {
-    public class GridColumn
+    public class GridColumn : IEquatable<GridColumn>
     {
         public string Name { get; }
-        public Type DataType { get; }
         public int Ordinal { get; internal set; }
 
-        public GridColumn(string name, Type dataType)
+        public GridColumn(string name)
         {
             Name = name;
-            DataType = dataType;
         }
 
         internal string GetValueAsString(Type sourceType, object row)
@@ -34,6 +32,23 @@ namespace FnacDarty.JobInterview.Stock.Views
         internal bool IsProperty(Type sourceType)
         {
             return sourceType.GetProperty(Name) != null;
+        }
+
+        bool IEquatable<GridColumn>.Equals(GridColumn other)
+        {
+            return Equals(other);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var other = obj as GridColumn;
+            if(other == null) return false;
+            return Name == other.Name && Ordinal == other.Ordinal;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(string.IsNullOrEmpty(Name)? 0 : Name.GetHashCode(), Ordinal);
         }
     }
 }

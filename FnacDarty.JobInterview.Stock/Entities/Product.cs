@@ -1,16 +1,14 @@
-﻿using FnacDarty.JobInterview.Stock.Validators;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace FnacDarty.JobInterview.Stock.Entities
 {
     /// <summary>
-    /// Représentation un produit avec un identifiant (EAN) et d'autres propriete pour d'ecrire le produit
+    /// Représente un produit avec un identifiant unique.
     /// </summary>
-    public struct Product : IEquatable<string>, IValidable<Product>
+    public struct Product : IEquatable<Product>
     {
         /// <summary>
-        /// Obtient l'identifiant EAN (8 charactères) du <seealso cref="Product"/>
+        /// Obtient l'identifiant unique du produit.
         /// </summary>
         public string Id { get; }
 
@@ -19,20 +17,19 @@ namespace FnacDarty.JobInterview.Stock.Entities
             Id = id;
         }
 
-        public IEnumerable<IValidator<Product>> GetValidators()
-        {
-            return new[] { new EanValidator() };
-        }
-
-        bool IEquatable<string>.Equals(string other)
+        bool IEquatable<Product>.Equals(Product other)
         {
             return Equals(other);
         }
 
         public override bool Equals(object obj)
         {
-            var other = (Product)obj;
-            return Id == other.Id;
+            if (obj is Product)
+            {
+                var other = (Product)obj;
+                return Id == other.Id;
+            }
+            return false;
         }
 
         public override int GetHashCode()

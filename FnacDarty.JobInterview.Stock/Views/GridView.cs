@@ -8,20 +8,29 @@ namespace FnacDarty.JobInterview.Stock.Views
 {
     public sealed class GridView : IGridView
     {
-        private IReadOnlyList<GridColumn> _columns;
+        private readonly IReadOnlyList<GridColumn> _columns;
         private IEnumerable _dataSource;
 
-        public static IGridDefinition Definition => new GridDefinition();
-
-        public GridView(IReadOnlyList<GridColumn> columns)
+        public GridView(IReadOnlyList<GridColumn> columns, object dataSource = null)
         {
-            _columns = new List<GridColumn>(columns);
+            if(columns == null) throw new ArgumentNullException(nameof(columns));
+            SetColumnsOrdinal(columns);
+            _columns = columns;
             _dataSource = new ArrayList();
+        }
+
+        private void SetColumnsOrdinal(IReadOnlyList<GridColumn> columns)
+        {
+            int index = 0;
+            foreach (var column in columns)
+            {
+                column.Ordinal = index++;
+            }
         }
 
         public void Bind(object source)
         {
-            if (source == null) throw new ArgumentNullException("source");
+            if (source == null) throw new ArgumentNullException(nameof(source));
 
             var dataSource = Normalize(source);
 
@@ -98,7 +107,7 @@ namespace FnacDarty.JobInterview.Stock.Views
             if (source == null) throw new ArgumentNullException(nameof(source));
 
             var elementType = source.GetElementType();
-            if (elementType != null && IsSourceHasProperties(elementType))
+            if (elementType != null && SourceHasProperties(elementType))
             {
                 return (IEnumerable)source;
             }
@@ -106,9 +115,6 @@ namespace FnacDarty.JobInterview.Stock.Views
             return new ArrayList() { source };
         }
 
-        private bool IsSourceHasProperties(Type sourceType)
-        {
-            return _columns.All(column => column.IsProperty(sourceType));
-        }
+        private bool SourceHasProperties(Type sourceType) => _columns.All(column => column.IsProperty(sourceType));
     }
 }

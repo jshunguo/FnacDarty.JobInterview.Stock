@@ -6,7 +6,7 @@ using System;
 namespace FnacDarty.JobInterview.Stock.UnitTest.Validators
 {
     [TestFixture]
-    internal class InventoryValidatorTest
+    internal class InventoryMovementValidatorTest
     {
         private static DateTime _currentDate = new DateTime(2023,11,3,0,0,0,DateTimeKind.Utc);
 
@@ -15,7 +15,7 @@ namespace FnacDarty.JobInterview.Stock.UnitTest.Validators
         {
             var lastInventory = CreateInvantory(42);
             var currentInventory = new StockMovement(DateTime.UtcNow.AddDays(23), lastInventory.Product,0);
-            var inventoryValidator = new InventoryValidator(lastInventory);
+            var inventoryValidator = new InventoryMovementValidator(lastInventory);
 
             var result = inventoryValidator.Validate(currentInventory);
 
@@ -29,7 +29,7 @@ namespace FnacDarty.JobInterview.Stock.UnitTest.Validators
         {
             var lastInventory = CreateInvantory(quantity);
             var currentInventory = new StockMovement(lastInventory.Date, new Product(lastInventory.Product.Id), quantity);
-            var inventoryValidator = new InventoryValidator(lastInventory);
+            var inventoryValidator = new InventoryMovementValidator(lastInventory);
 
             var result = inventoryValidator.Validate(currentInventory);
 

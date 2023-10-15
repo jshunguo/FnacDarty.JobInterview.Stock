@@ -12,10 +12,11 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
     [TestFixture]
     internal class StockManagerTest
     {
-        private Mock<IProductRepository> _productRepositoryMock;
-        private Mock<IStockMovementRepository> _stockMovementRepositoryMock;
         private Mock<IProductFactory> _productFactoryMock;
         private Mock<IStockMovementFactory> _stockMovementFactory;
+        private Mock<IProductRepository> _productRepositoryMock;
+        private Mock<IStockMovementRepository> _stockMovementRepositoryMock;
+        private IStockManager _stockManager;
 
         [SetUp]
         public void SetUp()
@@ -24,32 +25,68 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
             _stockMovementFactory = new Mock<IStockMovementFactory>(MockBehavior.Strict);
             _productRepositoryMock = new Mock<IProductRepository>(MockBehavior.Strict);
             _stockMovementRepositoryMock = new Mock<IStockMovementRepository>(MockBehavior.Strict);
+
+            _stockManager = new StockManager(_productFactoryMock.Object, _stockMovementFactory.Object, _productRepositoryMock.Object, _stockMovementRepositoryMock.Object);
         }
 
-        private void SetUpMocksForAdd(StockMovement lastInventory, StockMovement stockMovement)
+        [TearDown]
+        public void TearDown()
         {
-            var date = stockMovement.Date;
-            var label = stockMovement.Label;
-            var productId = stockMovement.Product.Id;
-            var quantity = stockMovement.Quantity;
-
-            _productFactoryMock.Setup(pf => pf.Get(productId)).Returns(new Product(productId));
-            _productRepositoryMock.Setup(pr => pr.IsProductExisting(productId)).Returns(false);
-            _productRepositoryMock.Setup(pr => pr.AddProduct(It.Is<Product>(p => p.Id == productId)));
-            _stockMovementFactory.Setup(sf => sf.GetStock(lastInventory, date, label, productId, quantity)).Returns(stockMovement);
-            _stockMovementRepositoryMock.Setup(sr => sr.GetLatestInventoryMovementForProduct(productId)).Returns(lastInventory);
-            _stockMovementRepositoryMock.Setup(sr => sr.AddMovement(It.Is<StockMovement>(sm => sm.Equals(stockMovement))));
+            _productFactoryMock.VerifyAll();
+            _stockMovementFactory.VerifyAll();
+            _productRepositoryMock.VerifyAll();
+            _stockMovementRepositoryMock.VerifyAll();
         }
 
-        private IStockManager CreateStockManager()
+        private StockMovement GenerateExpectedMovement()
         {
-            return new StockManager(_productFactoryMock.Object, _stockMovementFactory.Object, 
-                _productRepositoryMock.Object, _stockMovementRepositoryMock.Object);
+            return MockDataGenerator.Current.GenerateMovementToday();
         }
 
         private static StockMovement CreateSingleStockMovement(DateTime dateAfter, string label, string productId, long quantity)
         {
             return new StockMovement(dateAfter, label, new Product(productId), quantity);
+        }
+
+        private (DateTime, string, IDictionary<string, long>, List<StockMovement>) GenerateMultipleStockData()
+        {
+            var label = MockDataGenerator.Current.GenerateLabel(10);
+            var dateAfter = MockDataGenerator.Current.GenerateDateAfter(10);
+            var productQuantities = MockDataGenerator.Current.GenerateProductDictionary(3);
+            var expectedMovements = productQuantities
+                .Select(p => CreateSingleStockMovement(dateAfter, label, p.Key, p.Value)).ToList();
+            return (dateAfter, label, productQuantities, expectedMovements);
+        }
+
+        private void SetUpMocksForAdd(StockMovement stockMovement, StockMovement lastInventory = default)
+        {
+            var productId = stockMovement.Product.Id;
+            _productFactoryMock.Setup(pf => pf.Get(productId)).Returns(new Product(productId));
+            _productRepositoryMock.Setup(pr => pr.IsProductExisting(productId)).Returns(false);
+            _productRepositoryMock.Setup(pr => pr.AddProduct(It.Is<Product>(p => p.Id == productId)));
+
+            if (!lastInventory.Equals(default))
+            {
+                _stockMovementRepositoryMock.Setup(sr => sr.GetLatestInventoryMovementForProduct(productId)).Returns(lastInventory);
+            }
+
+            _stockMovementFactory.Setup(sf => sf.Get(lastInventory, stockMovement.Date, stockMovement.Label, productId, stockMovement.Quantity)).Returns(stockMovement);
+            _stockMovementRepositoryMock.Setup(sr => sr.AddMovement(stockMovement));
+        }
+
+        private void SetUpMocksForAddMultiple(DateTime dateAfter, string label,
+                                                 IDictionary<string, long> productQuantities,
+                                                 List<StockMovement> expectedMovements)
+        {
+            var inventories = productQuantities.Select(p => MockDataGenerator.Current.GenerateInventoryToday(p.Key)).ToList();
+            var inventorieDic = inventories.ToDictionary(i => i.Product.Id);
+
+            _productRepositoryMock.Setup(pr => pr.AddProducts(It.Is<IEnumerable<Product>>(args => AreSame(args, productQuantities.Keys))));
+            _productRepositoryMock.Setup(pr => pr.FilterExistingProductIds(productQuantities.Keys)).Returns(Enumerable.Empty<string>());
+            _stockMovementRepositoryMock.Setup(smr => smr.GetLatestInventoryMovementsUpToDate(dateAfter, productQuantities.Keys)).Returns(inventories);
+            _stockMovementRepositoryMock.Setup(smr => smr.AddMovements(It.Is<IEnumerable<StockMovement>>(args => AreSame(args, expectedMovements)))).Returns(expectedMovements.Count);
+
+            expectedMovements.ForEach(sm => _stockMovementFactory.Setup(sf => sf.Get(inventorieDic[sm.Product.Id], sm.Date, label, sm.Product.Id, sm.Quantity)).Returns(sm));
         }
 
         private static bool AreSame(IEnumerable<Product> products, IEnumerable<string> productIds)
@@ -67,90 +104,41 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
 
         private static void AssertMovement(StockMovement expectedMovement, StockMovement actualMovement)
         {
-            Assert.IsNotNull(actualMovement);
-            Assert.AreEqual(expectedMovement.Date, actualMovement.Date);
-            Assert.AreEqual(expectedMovement.Label, actualMovement.Label);
-            Assert.AreEqual(expectedMovement.Product, actualMovement.Product);
-            Assert.AreEqual(expectedMovement.Quantity, actualMovement.Quantity);
+            Assert.That(actualMovement, Is.Not.Null);
+            Assert.That(actualMovement.Date, Is.EqualTo(expectedMovement.Date));
+            Assert.That(actualMovement.Label, Is.EqualTo(expectedMovement.Label));
+            Assert.That(actualMovement.Product, Is.EqualTo(expectedMovement.Product));
+            Assert.That(actualMovement.Quantity, Is.EqualTo(expectedMovement.Quantity));
         }
 
         private static void AssertMovements(IEnumerable<StockMovement> expectedMovements, IEnumerable<StockMovement> actualMovements)
         {
-            var expected = new HashSet<StockMovement>(expectedMovements);
-            var actual = new HashSet<StockMovement>(actualMovements);
-            var except = actual.Except(expected).ToList();
-
-            Assert.AreEqual(expected.Count, actual.Count);
-            Assert.AreEqual(0, except.Count);
+            Assert.That(actualMovements, Is.EquivalentTo(expectedMovements));
         }
 
         private static void AssertDictionaries(IDictionary<string, long> expectedDictionary, IDictionary<string, long> actualDictionary)
         {
-            Assert.AreEqual(expectedDictionary.Count, actualDictionary.Count);
-
-            foreach (var expectedKey in expectedDictionary.Keys)
-            {
-                Assert.IsTrue(actualDictionary.ContainsKey(expectedKey));
-
-                var expectedValue = expectedDictionary[expectedKey];
-                var actualValue = actualDictionary[expectedKey];
-
-                Assert.AreEqual(expectedValue, actualValue);
-            }
-        }
-
-
-        private void AssertMocks()
-        {
-            _productFactoryMock.VerifyAll();
-            _productRepositoryMock.VerifyAll();
-            _stockMovementFactory.VerifyAll();
-            _stockMovementRepositoryMock.VerifyAll();
+            Assert.That(actualDictionary, Is.EquivalentTo(expectedDictionary));
         }
 
         [Test]
-        public void AddStock_ValidStock_Success()
+        public void AddMovement_ValidStock_ReturnExpectedStockMovement()
         {
             var expectedMovement = MockDataGenerator.Current.GenerateMovementToday();
-
-            SetUpMocksForAdd(default, expectedMovement);
-
-            var stockManager = CreateStockManager();
-
-            var date = expectedMovement.Date;
-            var label = expectedMovement.Label;
-            var productId = expectedMovement.Product.Id;
-            var quantity = expectedMovement.Quantity;
-
-            var result = stockManager.AddMovement(date, label, productId, quantity);
-
+            SetUpMocksForAdd(expectedMovement, StockMovement.DefaultInventory);
+            var result = _stockManager.AddMovement(expectedMovement.Date, expectedMovement.Label, expectedMovement.Product.Id, expectedMovement.Quantity);
             AssertMovement(expectedMovement, result);
-            AssertMocks();
         }
 
         [Test]
-        public void AddMultipleStock_ValidStocks_Success()
-        {     
-            var label = MockDataGenerator.Current.GenerateLabel(10);
-            var dateAfter = MockDataGenerator.Current.GenerateDateAfter(10);
-            var productQuantities = MockDataGenerator.Current.GenerateProductDictionary(3);
+        public void AddMultipleStock_ValidStocks_ShouldReturnExpectedStockMovements()
+        {
+            var (dateAfter, label, productQuantities, expectedMovements) = GenerateMultipleStockData();
+            SetUpMocksForAddMultiple(dateAfter, label, productQuantities, expectedMovements);
 
-            var inventories = productQuantities.Select(p => MockDataGenerator.Current.GenerateInventoryToday(p.Key)).ToList();
-            var expectedMovements = productQuantities.Select(p => CreateSingleStockMovement(dateAfter, label, p.Key, p.Value)).ToList();
-
-            var inventorieDic = inventories.ToDictionary(i => i.Product.Id);
-            _productRepositoryMock.Setup(pr => pr.AddProducts(It.Is<IEnumerable<Product>>(args => AreSame(args, productQuantities.Keys))));
-            _productRepositoryMock.Setup(pr => pr.FilterExistingProductIds(productQuantities.Keys)).Returns(Enumerable.Empty<string>());
-            _stockMovementRepositoryMock.Setup(smr => smr.GetLatestInventoryMovementsUpToDate(dateAfter, productQuantities.Keys)).Returns(inventories);
-            _stockMovementRepositoryMock.Setup(smr => smr.AddMovements(It.Is<IEnumerable<StockMovement>>(args => AreSame(args, expectedMovements)))).Returns(expectedMovements.Count);
-            expectedMovements.ForEach(sm => _stockMovementFactory.Setup(sf => sf.GetStock(inventorieDic[sm.Product.Id], sm.Date, label, sm.Product.Id, sm.Quantity)).Returns(sm));
-
-            var stockManager = CreateStockManager();
-
-            var result = stockManager.AddMultipleStock(dateAfter, label, productQuantities);
+            var result = _stockManager.AddMultipleStock(dateAfter, label, productQuantities);
 
             AssertMovements(expectedMovements, result);
-            AssertMocks();
         }
 
         [Test]
@@ -159,16 +147,12 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
             var date = DateTime.UtcNow.Date;
             var productId = MockDataGenerator.Current.GenerateProductId();
             var movements = MockDataGenerator.Current.GenerateUniqueMovementsForProductAtDate(productId, date);
-            var expectedValue = movements.Sum(sm => sm.Quantity);
 
             _stockMovementRepositoryMock.Setup(smr => smr.GetProductMovementsForDate(productId, date)).Returns(movements);
 
-            var stockManager = CreateStockManager();
+            var result = _stockManager.GetStockForProductAtDate(productId, date);
 
-            var result = stockManager.GetStockForProductAtDate(productId, date);
-
-            Assert.AreEqual(expectedValue, result);
-            AssertMocks();
+            Assert.AreEqual(movements.Sum(sm => sm.Quantity), result);
         }
 
         [Test]
@@ -178,20 +162,14 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
             var startDate = MockDataGenerator.Current.GenerateDateBefore(5);
             var endDate = MockDataGenerator.Current.GenerateDateAfter(10);
 
-            var movements = new List<StockMovement>()
-            {
-                CreateSingleStockMovement(startDate,MockDataGenerator.Current.GenerateLabel(10), productId, MockDataGenerator.Current.GenerateQuantity()),
-                CreateSingleStockMovement(endDate,MockDataGenerator.Current.GenerateLabel(10), productId, MockDataGenerator.Current.GenerateQuantity()),
-            };
-            var dictionary = movements.ToDictionary(sm => sm.Date, sm => sm.Quantity);
-            var expectedValue = dictionary[endDate] - dictionary[startDate];
+            var movements = MockDataGenerator.Current.GenerateProductMovementsBetweenDates(productId, startDate, endDate);
+            var startValue = movements.Where(sm => sm.Date == startDate).Sum(sm => sm.Quantity);
+            var endValue = movements.Where(sm => sm.Date == endDate).Sum(sm => sm.Quantity);
             _stockMovementRepositoryMock.Setup(smr => smr.GetProductMovementsBetweenDates(productId, startDate, endDate)).Returns(movements);
-            var stockManager = CreateStockManager();
 
-            var result = stockManager.GetStockVariationForProduct(productId, startDate, endDate);
+            var result = _stockManager.GetStockVariationForProduct(productId, startDate, endDate);
 
-            Assert.AreEqual(expectedValue, result);
-            AssertMocks();
+            Assert.AreEqual(endValue - startValue, result);
         }
 
         [Test]
@@ -199,74 +177,55 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
         {
             var productId = MockDataGenerator.Current.GenerateProductId();
             var movements = MockDataGenerator.Current.GenerateUniqueMovementsForProductAtDate(productId, DateTime.UtcNow.Date);
-            var expectedValue = movements.Sum(sm => sm.Quantity);
 
             _stockMovementRepositoryMock.Setup(smr => smr.GetProductMovementsForDate(productId, DateTime.UtcNow.Date)).Returns(movements);
 
-            var stockManager = CreateStockManager();
+            var result = _stockManager.GetCurrentStockForProduct(productId);
 
-            var result = stockManager.GetCurrentStockForProduct(productId);
-
-            Assert.AreEqual(expectedValue, result);
-            AssertMocks();
+            Assert.AreEqual(movements.Sum(sm => sm.Quantity), result);
         }
 
         [Test]
-        public void GetProductsInStock_WithProducts_Success()
+        public void GetProductsInStock_WithProducts_ReturnProductQuantities()
         {
-            var movements = new List<StockMovement>()
-            {
-                CreateSingleStockMovement(DateTime.UtcNow.Date, "Test 1", "EAN12345", 18),
-                CreateSingleStockMovement(DateTime.UtcNow.Date.AddDays(-10), "Test 2", "EAN67891", 18),
-            };
+            var date = DateTime.UtcNow.Date;
+            var movements = MockDataGenerator.Current.GenerateMovementsForDate(date);
+            _stockMovementRepositoryMock.Setup(smr => smr.GetMovementsForDate(date)).Returns(movements);
 
-            var expectedDictionary = movements.ToDictionary(sm => sm.Product.Id, sm => sm.Quantity);
-            _stockMovementRepositoryMock.Setup(smr => smr.GetMovementsForDate(DateTime.UtcNow.Date)).Returns(movements);
+            var result = _stockManager.GetProductsInStock();
 
-            var stockManager = CreateStockManager();
-            var result = stockManager.GetProductsInStock();
+            var expected = movements.GroupBy(m => m.Product.Id).ToDictionary(g => g.Key, g => g.Sum(m => m.Quantity));
 
-            AssertDictionaries(expectedDictionary, result);
-            AssertMocks();
+            AssertDictionaries(expected, result);
         }
 
         [Test]
         public void GetTotalProductsInStock_WithProducts_ReturnValue()
         {
-            var movements = new List<StockMovement>()
-            {
-                CreateSingleStockMovement(DateTime.UtcNow.Date, "Test 1", "EAN12345", 10),
-                CreateSingleStockMovement(DateTime.UtcNow.Date, "Test 2", "EAN67891", 5),
-                CreateSingleStockMovement(DateTime.UtcNow.Date, "Test 2", "EAN67893", 5)
-            };
+            var date = DateTime.UtcNow.Date;
+            var movements = MockDataGenerator.Current.GenerateMovementsForDate(date);
             _stockMovementRepositoryMock.Setup(smr => smr.GetMovementsForDate(DateTime.UtcNow.Date)).Returns(movements);
-            
-            var stockManager = CreateStockManager();
-            var result = stockManager.GetTotalProductsInStock();
 
-            Assert.AreEqual(20, result);
-            AssertMocks();
+            var result = _stockManager.GetTotalProductsInStock();
+
+            Assert.AreEqual(movements.Sum(sm => sm.Quantity), result);
         }
 
         [Test]
         public void RegularizeStockForProduct_ValidProductAndQuantity_Success()
         {
-            var inventory = CreateSingleStockMovement(DateTime.UtcNow.Date,null, "EAN12345", 5);
-            var movements = new[]
-            {
-                CreateSingleStockMovement(DateTime.UtcNow.Date, "Test 3","EAN12345", 15)
-            };
+            var productId = "EAN12345";
+            var today = DateTime.UtcNow.Date;
+            var inventoryQuantity = MockDataGenerator.Current.GenerateQuantity();
 
-            _stockMovementRepositoryMock.Setup(smr => smr.GetProductMovementsForDate(inventory.Product.Id, DateTime.UtcNow.Date)).Returns(movements);
-            SetUpMocksForAdd(default, inventory);
+            var movement = new StockMovement(today, new Product(productId), MockDataGenerator.Current.GenerateQuantity());
+            var expectedMovement = new StockMovement(today, new Product(productId), inventoryQuantity - movement.Quantity);
 
-            var stockManager = CreateStockManager();
+            SetUpMocksForAdd(expectedMovement, StockMovement.DefaultInventory);
 
-            var productId = inventory.Product.Id;
+            _stockMovementRepositoryMock.Setup(smr => smr.GetProductMovementsForDate(productId, today)).Returns(new List<StockMovement> { movement });
 
-            stockManager.RegularizeStockForProduct(productId, 20);
-
-            AssertMocks();
+            Assert.DoesNotThrow(() => _stockManager.RegularizeStockForProduct(productId, inventoryQuantity));
         }
     }
 }

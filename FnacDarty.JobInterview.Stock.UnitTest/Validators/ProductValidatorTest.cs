@@ -6,12 +6,12 @@ using System;
 namespace FnacDarty.JobInterview.Stock.UnitTest.Validators
 {
     [TestFixture]
-    internal class EanValidatorTest
+    internal class ProductValidatorTest
     {
         [TestCase("ean12345")]
         public void Validate_ValidProduct_ReturnTrue(string productId)
         {
-            var eanValidator = new EanValidator();
+            var eanValidator = new ProductValidator();
             var product = new Product(productId);
 
             var result = eanValidator.Validate(product);
@@ -26,7 +26,7 @@ namespace FnacDarty.JobInterview.Stock.UnitTest.Validators
         [TestCase("a@i#12aR", "L'identifiant du produit a@i#12aR doit comporter 8 charactère alphanumerique")]
         public void Validate_InvalidProduct_ReturnFalse(string productId, string expectedMessage) 
         {
-            var eanValidator = new EanValidator();
+            var eanValidator = new ProductValidator();
             var product = new Product(productId);
 
             var result = eanValidator.Validate(product);
