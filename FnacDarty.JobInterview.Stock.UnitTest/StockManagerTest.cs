@@ -83,7 +83,7 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
 
             _productRepositoryMock.Setup(pr => pr.AddProducts(It.Is<IEnumerable<Product>>(args => AreSame(args, productQuantities.Keys))));
             _productRepositoryMock.Setup(pr => pr.FilterExistingProductIds(productQuantities.Keys)).Returns(Enumerable.Empty<string>());
-            _stockMovementRepositoryMock.Setup(smr => smr.GetLatestInventoryMovementsUpToDate(productQuantities.Keys)).Returns(inventories);
+            _stockMovementRepositoryMock.Setup(smr => smr.GetLatestInventoryMovementsUpToDate(productQuantities.Keys)).Returns(inventorieDic);
             _stockMovementRepositoryMock.Setup(smr => smr.AddMovements(It.Is<IEnumerable<StockMovement>>(args => AreSame(args, expectedMovements)))).Returns(expectedMovements.Count);
 
             expectedMovements.ForEach(sm => _stockMovementFactory.Setup(sf => sf.Get(inventorieDic[sm.Product.Id], sm.Date, label, sm.Product.Id, sm.Quantity)).Returns(sm));

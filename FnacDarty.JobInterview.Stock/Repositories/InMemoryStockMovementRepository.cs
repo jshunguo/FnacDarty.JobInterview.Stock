@@ -96,9 +96,9 @@ namespace FnacDarty.JobInterview.Stock.Repositories
             return default;
         }
 
-        public IEnumerable<StockMovement> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds)
+        public IDictionary<string, StockMovement> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds)
         {
-            return productIds.Select(GetLatestInventoryMovementForProduct);
+            return productIds.ToDictionary(p => p, p => GetLatestInventoryMovementForProduct(p));
         }
     }
 }
