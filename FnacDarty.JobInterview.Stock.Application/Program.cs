@@ -26,8 +26,8 @@ namespace FnacDarty.JobInterview.Stock.Application
             var services = new ServiceCollection();
 
             // Repositories
-            services.AddSingleton<IProductRepository, ProductRepository>();
-            services.AddSingleton<IStockMovementRepository, StockMovementRepository>();
+            services.AddSingleton<IProductRepository, InMemoryProductRepository>();
+            services.AddSingleton<IStockMovementRepository, InMemoryStockMovementRepository>();
 
             // Base Factories
             services.AddTransient<ProductFactory>();

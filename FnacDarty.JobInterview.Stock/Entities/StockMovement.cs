@@ -12,10 +12,6 @@ namespace FnacDarty.JobInterview.Stock.Entities
 
         public static StockMovement DefaultInventory = new StockMovement(DateTime.MinValue.ToUniversalTime().Date, null, new Product("EAN1234"), 0);
 
-        /// <summary>
-        /// Obtient l'identifiant unique du mouvement de stock.
-        /// </summary>
-        public Guid Id { get; }
 
         /// <summary>
         /// Obtient le libellé descriptif du mouvement de stock.
@@ -44,7 +40,6 @@ namespace FnacDarty.JobInterview.Stock.Entities
 
         public StockMovement(DateTime date, string label, Product product, long quantity)
         {
-            Id = Guid.NewGuid();
             Date = date;
             IsInventory = string.IsNullOrEmpty(label) || string.Equals(label, InventoryName, StringComparison.OrdinalIgnoreCase);
             Product = product;

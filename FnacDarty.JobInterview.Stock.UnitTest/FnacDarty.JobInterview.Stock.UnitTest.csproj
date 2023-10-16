@@ -17,8 +17,4 @@
     <ProjectReference Include="..\FnacDarty.JobInterview.Stock\FnacDarty.JobInterview.Stock.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\" />
-  </ItemGroup>
-
 </Project>

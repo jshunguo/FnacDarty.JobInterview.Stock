@@ -44,7 +44,7 @@ namespace FnacDarty.JobInterview.Stock
 
         private IReadOnlyCollection<StockMovement> CreateMovements(DateTime date, string label, IDictionary<string, long> productQuantities)
         {
-            var lastInventories = _stockMovementRepository.GetLatestInventoryMovementsUpToDate(date, productQuantities.Keys);
+            var lastInventories = _stockMovementRepository.GetLatestInventoryMovementsUpToDate(productQuantities.Keys);
             var inventoryByProduct = lastInventories.ToDictionary(i => i.Product.Id);
             var result = new List<StockMovement>();
 

@@ -63,9 +63,8 @@ namespace FnacDarty.JobInterview.Stock.Repositories
         /// <summary>
         /// Récupère les mouvements d'inventaire les plus récents pour une liste de produits jusqu'à une date spécifiée.
         /// </summary>
-        /// <param name="date"></param>
         /// <param name="productIds"></param>
         /// <returns></returns>
-        IEnumerable<StockMovement> GetLatestInventoryMovementsUpToDate(DateTime date, IEnumerable<string> productIds);
+        IEnumerable<StockMovement> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds);
     }
 }
