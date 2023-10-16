@@ -15,12 +15,12 @@ namespace FnacDarty.JobInterview.Stock.Factories
             _validatorFactory = validatorFactory;
         }
 
-        public StockMovement Get(StockMovement lastInventory, DateTime date, string productId, long quantity)
+        public StockMovement Get(StockMovement? lastInventory, DateTime date, string productId, long quantity)
         {
             return Get(lastInventory,date,null,productId,quantity);
         }
 
-        public StockMovement Get(StockMovement lastInventory, DateTime date, string label, string productId, long quantity)
+        public StockMovement Get(StockMovement? lastInventory, DateTime date, string label, string productId, long quantity)
         {
             var stockMovement = _innerFactory.Get(lastInventory, date, label, productId, quantity);
 
@@ -31,7 +31,7 @@ namespace FnacDarty.JobInterview.Stock.Factories
             }
             else
             {
-                validator = _validatorFactory.GetRegularMovementValidator(lastInventory.Date);
+                validator = _validatorFactory.GetRegularMovementValidator(lastInventory?.Date);
             }
 
             var validationResult = validator.Validate(stockMovement);

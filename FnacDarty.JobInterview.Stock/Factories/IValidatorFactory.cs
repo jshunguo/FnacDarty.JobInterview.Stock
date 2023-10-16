@@ -20,13 +20,13 @@ namespace FnacDarty.JobInterview.Stock.Factories
         /// </summary>
         /// <param name="lastInventory">Le dernier mouvement de stock de type "Inventaire".</param>
         /// <returns>Un validateur pour les mouvements de stock de type "Inventaire".</returns>
-        IValidator<StockMovement> GetInventoryMovementValidator(StockMovement lastInventory);
+        IValidator<StockMovement> GetInventoryMovementValidator(StockMovement? lastInventory);
 
         /// <summary>
         /// Obtient le validateur pour les mouvements de stock réguliers.
         /// </summary>
         /// <param name="lastInventoryDate">La date du dernier mouvement de stock de type "Inventaire".</param>
         /// <returns>Un validateur pour les mouvements de stock réguliers.</returns>
-        IValidator<StockMovement> GetRegularMovementValidator(DateTime lastInventoryDate);
+        IValidator<StockMovement> GetRegularMovementValidator(DateTime? lastInventoryDate);
     }
 }

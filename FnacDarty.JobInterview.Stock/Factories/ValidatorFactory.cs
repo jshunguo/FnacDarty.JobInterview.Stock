@@ -6,7 +6,7 @@ namespace FnacDarty.JobInterview.Stock.Factories
 {
     public class ValidatorFactory : IValidatorFactory
     {
-        public IValidator<StockMovement> GetInventoryMovementValidator(StockMovement lastInventory)
+        public IValidator<StockMovement> GetInventoryMovementValidator(StockMovement? lastInventory)
         {
             return new InventoryMovementValidator(lastInventory);
         }
@@ -16,7 +16,7 @@ namespace FnacDarty.JobInterview.Stock.Factories
             return new ProductValidator();
         }
 
-        public IValidator<StockMovement> GetRegularMovementValidator(DateTime lastInventoryDate)
+        public IValidator<StockMovement> GetRegularMovementValidator(DateTime? lastInventoryDate)
         {
             return new RegularMovementValidator(lastInventoryDate);
         }

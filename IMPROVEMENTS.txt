@@ -1,0 +1,60 @@
+POINTS D'AMELIORATION
+
+A) Historique des mouvements:
+- Combien de temps les données des mouvements doivent-elles être conservées?
+- Y a-t-il une période après laquelle les vieux mouvements peuvent être archivés ou supprimés?
+
+B) Notification:
+- Les utilisateurs doivent-ils être notifiés de certaines actions ou erreurs (par exemple, lorsqu'un stock est faible ou épuisé)?
+
+C) Intégration avec d'autres systèmes:
+- L'application sera-t-elle intégrée à d'autres systèmes ou plateformes?
+- Si oui, quels sont les besoins en matière d'API ou d'interfaces?
+
+D) Contrôles d'accès:
+- Tous les utilisateurs ont-ils le même niveau d'accès à l'application?
+- Y a-t-il différents niveaux d'autorisation (par exemple, administrateur vs utilisateur standard)?
+
+E) Scalabilité:
+- À quoi s'attend-on en termes de volume de produits et de fréquence de mouvements?
+
+F) Backup et récupération:
+- Y a-t-il des exigences pour sauvegarder les données?
+- Comment restaurer le système en cas de défaillance?
+
+G) Exigences en matière d'audit:
+- Doit-on conserver un journal des actions effectuées dans le système?
+
+---
+
+MIGRATION VERS UNE SOLUTION DE BASE DE DONNÉES
+
+Raisons et avantages de la migration vers SQL ou NoSQL:
+
+- **Performance**: Les bases de données sont optimisées pour la recherche, l'insertion, la mise à jour et la suppression de données. 
+Les requêtes complexes peuvent être exécutées rapidement grâce à l'indexation et autres optimisations.
+  
+- **Robustesse**: Les systèmes de gestion de bases de données (SGBD) offrent des mécanismes pour assurer la robustesse des données, tels que les transactions, les contraintes d'intégrité et les sauvegardes automatiques.
+  
+- **Memoryless**: Contrairement à une solution entièrement en mémoire, une base de données peut stocker des téraoctets de données sans dépendre de la mémoire RAM disponible.
+De plus, en cas de redémarrage ou de panne du système, les données restent intactes.
+
+SQL vs NoSQL:
+
+- **SQL (par exemple, PostgreSQL, MySQL, SQL Server)**:
+  - Schema fixe: assure la cohérence et l'intégrité des données.
+  - Relations entre les tables: pratique pour les données interdépendantes.
+  - Transactions: garantissent l'intégrité des données après chaque opération.
+  - Idéal pour les données structurées et les requêtes complexes.
+
+- **NoSQL (par exemple, MongoDB, Cassandra, Redis)**:
+  - Schema flexible: permet de gérer facilement les données évolutives et non structurées.
+  - Scalabilité horizontale: facilite la gestion de grandes quantités de données réparties.
+  - Différents modèles de données (document, colonne, clé/valeur, graphe).
+  - Idéal pour les données non structurées, les grands volumes de données et les écritures rapides.
+
+CHOIX STRATÉGIQUE:
+
+La décision entre SQL et NoSQL dépendra de la nature de vos données et de vos besoins. 
+Si vous avez des données structurées avec des relations complexes et que vous avez besoin de transactions, un système SQL serait approprié. 
+En revanche, si vous avez des données évolutives, non structurées ou semi-structurées et que vous avez besoin de scalabilité, une solution NoSQL serait plus adaptée.

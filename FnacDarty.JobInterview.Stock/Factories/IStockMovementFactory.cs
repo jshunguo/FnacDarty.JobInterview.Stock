@@ -16,7 +16,7 @@ namespace FnacDarty.JobInterview.Stock.Factories
         /// <param name="productId">L'identifiant du produit concerné par le mouvement.</param>
         /// <param name="quantity">La quantité associée au mouvement de stock.</param>
         /// <returns>Un <seealso cref="StockMovement"/> correspondant aux paramètres fournis.</returns>
-        StockMovement Get(StockMovement lastInventory, DateTime date, string productId, long quantity);
+        StockMovement Get(StockMovement? lastInventory, DateTime date, string productId, long quantity);
 
         /// <summary>
         /// Crée et obtient un mouvement de stock avec un label spécifique basé sur les paramètres fournis.
@@ -27,6 +27,6 @@ namespace FnacDarty.JobInterview.Stock.Factories
         /// <param name="productId">L'identifiant du produit concerné par le mouvement.</param>
         /// <param name="quantity">La quantité associée au mouvement de stock.</param>
         /// <returns>Un <seealso cref="StockMovement"/> correspondant aux paramètres fournis.</returns>
-        StockMovement Get(StockMovement lastInventory, DateTime date, string label, string productId, long quantity);
+        StockMovement Get(StockMovement? lastInventory, DateTime date, string label, string productId, long quantity);
     }
 }

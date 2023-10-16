@@ -79,7 +79,7 @@ namespace FnacDarty.JobInterview.Stock.UnitTest
                                                  List<StockMovement> expectedMovements)
         {
             var inventories = productQuantities.Select(p => MockDataGenerator.Current.GenerateInventoryToday(p.Key)).ToList();
-            var inventorieDic = inventories.ToDictionary(i => i.Product.Id);
+            var inventorieDic = inventories.ToDictionary(i => i.Product.Id, i=> (StockMovement?)i);
 
             _productRepositoryMock.Setup(pr => pr.AddProducts(It.Is<IEnumerable<Product>>(args => AreSame(args, productQuantities.Keys))));
             _productRepositoryMock.Setup(pr => pr.FilterExistingProductIds(productQuantities.Keys)).Returns(Enumerable.Empty<string>());

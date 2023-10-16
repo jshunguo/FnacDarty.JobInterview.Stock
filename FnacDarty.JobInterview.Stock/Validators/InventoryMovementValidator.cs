@@ -6,9 +6,9 @@ namespace FnacDarty.JobInterview.Stock.Validators
 {
     public class InventoryMovementValidator : IValidator<StockMovement>
     {
-        private StockMovement lastInventory;
+        private StockMovement? lastInventory;
 
-        public InventoryMovementValidator(StockMovement lastInventory)
+        public InventoryMovementValidator(StockMovement? lastInventory)
         {
             this.lastInventory = lastInventory;
         }
@@ -20,9 +20,10 @@ namespace FnacDarty.JobInterview.Stock.Validators
                 return new ValidatorResult(false, new ArgumentException($"[Inventory:{entity.Date.ToShortDateString()}] : Les mouvements d'inventaire ne peuvent pas avoir une quantité négative ou null."));
             }
 
-            var value = lastInventory.Label == entity.Label &&
-                        lastInventory.Date == entity.Date &&
-                        lastInventory.Product.Id == entity.Product.Id;
+            var value = lastInventory.HasValue && 
+                        lastInventory.Value.Label == entity.Label &&
+                        lastInventory.Value.Date == entity.Date &&
+                        lastInventory.Value.Product.Id == entity.Product.Id;
             
             return new ValidatorResult(!value, value ? new ArgumentException($"[Inventory:{entity.Date.ToShortDateString()}] : Il existe déjà un mouvement d'inventaire pour ce produit {entity.Product.Id}.") : null);
         }

@@ -1,5 +1,6 @@
 ﻿using FnacDarty.JobInterview.Stock.Entities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,6 +10,7 @@ namespace FnacDarty.JobInterview.Stock.Repositories
     {
         private readonly IDictionary<string, SortedSet<StockMovement>> _movementsByProduct;
         private readonly IDictionary<DateTime, SortedSet<StockMovement>> _movementsByDate;
+        private readonly object _lockObject = new object();
 
         public InMemoryStockMovementRepository(IDictionary<string, SortedSet<StockMovement>> movementsByProduct,
             IDictionary<DateTime, SortedSet<StockMovement>> movementsByDate)
@@ -18,8 +20,8 @@ namespace FnacDarty.JobInterview.Stock.Repositories
         }
 
         public InMemoryStockMovementRepository() : 
-            this(new Dictionary<string, SortedSet<StockMovement>>(), 
-                new Dictionary<DateTime, SortedSet<StockMovement>>())
+            this(new ConcurrentDictionary<string, SortedSet<StockMovement>>(), 
+                new ConcurrentDictionary<DateTime, SortedSet<StockMovement>>())
         {
 
         }
@@ -46,27 +48,49 @@ namespace FnacDarty.JobInterview.Stock.Repositories
 
         public void AddMovement(StockMovement stockMovement)
         {
-            GetOrCreateSetForProduct(stockMovement.Product.Id).Add(stockMovement);
-            GetOrCreateSetForDate(stockMovement.Date).Add(stockMovement);
+            lock (_lockObject)
+            {
+                GetOrCreateSetForProduct(stockMovement.Product.Id).Add(stockMovement);
+                GetOrCreateSetForDate(stockMovement.Date).Add(stockMovement);
+            }
         }
 
         public int AddMovements(IEnumerable<StockMovement> stockMovements)
         {
-            int addedCount = 0;
-            foreach (var movement in stockMovements)
+            var movementsByProduct = stockMovements.GroupBy(m => m.Product.Id);
+            var movementsByDate = stockMovements.GroupBy(m => m.Date);
+
+            foreach (var group in movementsByProduct)
             {
-                AddMovement(movement);
-                addedCount++;
+                var set = GetOrCreateSetForProduct(group.Key);
+                lock (_lockObject)
+                {
+                    set.UnionWith(group);
+                }
             }
-            return addedCount;
+
+            foreach (var group in movementsByDate)
+            {
+                var set = GetOrCreateSetForDate(group.Key);
+                lock (_lockObject)
+                {
+                    set.UnionWith(group);
+                }
+            }
+
+            return stockMovements.Count();
         }
 
         public IEnumerable<StockMovement> GetProductMovementsBetweenDates(string productId, DateTime startDate, DateTime endDate)
         {
             if (_movementsByProduct.TryGetValue(productId, out var set))
             {
-                return set.Where(sm => sm.Date >= startDate && sm.Date <= endDate);
+                var endMovement = new StockMovement(DateTime.MaxValue, "zzz", new Product(productId), int.MaxValue);
+                var startMovement = new StockMovement(DateTime.MinValue, "", new Product(productId), int.MinValue);
+
+                return set.GetViewBetween(startMovement, endMovement);
             }
+
             return Enumerable.Empty<StockMovement>();
         }
 
@@ -87,18 +111,27 @@ namespace FnacDarty.JobInterview.Stock.Repositories
             : Enumerable.Empty<StockMovement>(); ;
         }
 
-        public StockMovement GetLatestInventoryMovementForProduct(string productId)
+        public StockMovement? GetLatestInventoryMovementForProduct(string productId)
         {
             if (_movementsByProduct.TryGetValue(productId, out var set))
             {
-                return set.LastOrDefault(sm => sm.IsInventory);
+                var endMovement = new StockMovement(DateTime.MaxValue, "zzz", new Product(productId), int.MaxValue);
+                var startMovement = new StockMovement(DateTime.MinValue, "", new Product(productId), int.MinValue);
+
+                return set.GetViewBetween(startMovement, endMovement).Reverse().FirstOrDefault(sm => sm.IsInventory);
             }
-            return default;
+            return null;
         }
 
-        public IDictionary<string, StockMovement> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds)
+        public IDictionary<string, StockMovement?> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds)
         {
-            return productIds.ToDictionary(p => p, p => GetLatestInventoryMovementForProduct(p));
+            var today = DateTime.UtcNow.Date;
+            var earliestDate = DateTime.MinValue.ToUniversalTime().Date;
+
+            return productIds.ToDictionary(
+                productId => productId,
+                productId => GetLatestInventoryMovementForProduct(productId)
+            );
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FnacDarty.JobInterview.Stock.Entities;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace FnacDarty.JobInterview.Stock.Repositories
             _productDictionary = productDictionary;
         }
 
-        public InMemoryProductRepository() :this(new Dictionary<string, Product>()) { }
+        public InMemoryProductRepository() :this(new ConcurrentDictionary<string, Product>()) { }
 
         public void AddProduct(Product product)
         {

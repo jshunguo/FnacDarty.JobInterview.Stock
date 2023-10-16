@@ -12,15 +12,13 @@ namespace FnacDarty.JobInterview.Stock.Repositories
             int dateComparison = x.Date.CompareTo(y.Date);
             if (dateComparison != 0) return dateComparison;
 
-            int labelComparison = string.Compare(x.Label, y.Label);
+            int labelComparison = x.Label.CompareTo(y.Label);
             if (labelComparison != 0) return labelComparison;
 
-            int productComparison = string.Compare(x.Product.Id, y.Product.Id);
+            int productComparison = x.Product.Id.CompareTo(y.Product.Id);
             if (productComparison != 0) return productComparison;
 
             return x.Quantity.CompareTo(y.Quantity);
         }
     }
-
-
 }

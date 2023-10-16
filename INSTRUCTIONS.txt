@@ -1,0 +1,15 @@
+Bonjour,
+
+J'ai développé une application cliente pour la gestion des stocks que je souhaite vous faire découvrir. Voici comment l'utiliser :
+
+- Commencez par compiler la solution.
+- Définissez FnacDarty.JobInterview.Stock.Application comme projet de démarrage.
+- Exécutez l'application et laissez-vous guider par ses fonctionnalités.
+
+Si vous souhaitez importer des mouvements en masse à l'aide d'un fichier CSV, je vous ai fourni un template pour faciliter cette tâche. 
+Vous trouverez le fichier Template_ProductQuantities.csv inclus dans la solution. Utilisez cette section réservée pour l'importation.
+
+J'attends avec impatience vos retours et questions. Si je peux y répondre, je me ferai un plaisir de le faire dans les plus brefs délais. Ce fut un réel plaisir d'avoir mis mon temps et mes compétences à votre disposition.
+
+Cordialement,
+Jean SHUNGU OMATETE

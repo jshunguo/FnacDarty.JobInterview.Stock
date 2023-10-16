@@ -15,6 +15,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnacDarty.JobInterview.Stock.Application", "FnacDarty.JobInterview.Stock.Application\FnacDarty.JobInterview.Stock.Application.csproj", "{730666F2-AF96-449A-A286-4C13499323FF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "A LIRE PAR LE CLIENT UNIQUEMENT", "A LIRE PAR LE CLIENT UNIQUEMENT", "{C826793E-7827-411E-A35A-FB77FC03D30F}"
+	ProjectSection(SolutionItems) = preProject
+		Template_ProductQuantities.csv = Template_ProductQuantities.csv
+		INSTRUCTIONS.txt = INSTRUCTIONS.txt
+		IMPROVEMENTS.txt = IMPROVEMENTS.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +43,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C826793E-7827-411E-A35A-FB77FC03D30F} = {2F9FFDCD-0B37-4B28-BE18-396F4A3002BD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4714079A-4CA4-4A10-8ADD-8E5B2262B3EE}

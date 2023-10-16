@@ -124,7 +124,7 @@ namespace FnacDarty.JobInterview.Stock.UnitTest.Repositories
             _repository.AddMovement(movement2);
             _repository.AddMovement(movement3);
 
-            var result = _repository.GetLatestInventoryMovementsUpToDate(new[] { "EAN123", "EAN456" }).ToList();
+            var result = _repository.GetLatestInventoryMovementsUpToDate(new[] { "EAN123", "EAN456" }).Values.ToList();
 
             Assert.Contains(movement1, result);  
             Assert.Contains(movement3, result);  
@@ -161,8 +161,7 @@ namespace FnacDarty.JobInterview.Stock.UnitTest.Repositories
         public void GetLatestInventoryMovementForProduct_NoInventoryMovements_ReturnsDefault()
         {
             var result = _repository.GetLatestInventoryMovementForProduct("EAN123");
-            var expected = default(StockMovement);
-            Assert.AreEqual(expected, result);
+            Assert.AreEqual(null, result);
         }
     }
 }

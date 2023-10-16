@@ -49,7 +49,7 @@ namespace FnacDarty.JobInterview.Stock.Repositories
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
-        StockMovement GetLatestInventoryMovementForProduct(string productId);
+        StockMovement? GetLatestInventoryMovementForProduct(string productId);
 
         /// <summary>
         /// Recupère les mouvements de stock d'un produit spécifique entre deux dates
@@ -65,6 +65,6 @@ namespace FnacDarty.JobInterview.Stock.Repositories
         /// </summary>
         /// <param name="productIds"></param>
         /// <returns></returns>
-        IDictionary<string, StockMovement> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds);
+        IDictionary<string, StockMovement?> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds);
     }
 }
