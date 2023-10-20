@@ -45,7 +45,7 @@ namespace FnacDarty.JobInterview.Stock.Repositories
         IEnumerable<StockMovement> GetMovementsForProduct(string productId);
 
         /// <summary>
-        /// Recupère le dernier mouvement d'inventaire pour un produit
+        /// Recupère le dernier mouvement d'inventaire pour un produit à la date actuelle
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
@@ -61,7 +61,7 @@ namespace FnacDarty.JobInterview.Stock.Repositories
         IEnumerable<StockMovement> GetProductMovementsBetweenDates(string productId, DateTime startDate, DateTime endDate);
 
         /// <summary>
-        /// Récupère les mouvements d'inventaire les plus récents pour une liste de produits jusqu'à une date spécifiée.
+        /// Récupère les mouvements d'inventaire les plus récents pour une liste de produits à la date actuelle.
         /// </summary>
         /// <param name="productIds"></param>
         /// <returns></returns>

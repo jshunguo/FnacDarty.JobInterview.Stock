@@ -125,9 +125,6 @@ namespace FnacDarty.JobInterview.Stock.Repositories
 
         public IDictionary<string, StockMovement?> GetLatestInventoryMovementsUpToDate(IEnumerable<string> productIds)
         {
-            var today = DateTime.UtcNow.Date;
-            var earliestDate = DateTime.MinValue.ToUniversalTime().Date;
-
             return productIds.ToDictionary(
                 productId => productId,
                 productId => GetLatestInventoryMovementForProduct(productId)

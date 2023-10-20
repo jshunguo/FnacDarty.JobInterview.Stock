@@ -19,7 +19,7 @@ namespace FnacDarty.JobInterview.Stock
         public IGridView DisplayCurrentStockForProduct(string productId)
         {
             var value = _stockManager.GetCurrentStockForProduct(productId);
-            return _gridService.DisplayDataInGrid(value, GetColumnsForForProductStock(productId));
+            return _gridService.DisplayDataInGrid(value, GetColumnsForProductStock(productId));
         }
 
         public IGridView DisplayMovement(DateTime date, string label, string productId, long quantity)
@@ -37,7 +37,7 @@ namespace FnacDarty.JobInterview.Stock
         public IGridView DisplayProductsInStock()
         {
             var productByQuantityDic = _stockManager.GetProductsInStock();
-            return _gridService.DisplayDataInGrid(productByQuantityDic.Values, GetColumnsForForAllProductStocks(productByQuantityDic.Keys));
+            return _gridService.DisplayDataInGrid(productByQuantityDic.Values, GetColumnsForAllProductStocks(productByQuantityDic.Keys));
         }
 
         public IGridView DisplayStockAfterRegularizationForProduct(string productId, long quantity)
@@ -48,7 +48,7 @@ namespace FnacDarty.JobInterview.Stock
                 { productId, _stockManager.GetCurrentStockForProduct(productId) }
             };
 
-            return _gridService.DisplayDataInGrid(currentStock.Values, GetColumnsForForAllProductStocks(currentStock.Keys));
+            return _gridService.DisplayDataInGrid(currentStock.Values, GetColumnsForAllProductStocks(currentStock.Keys));
         }
 
         public IGridView DisplayStockForProductAtDate(string productId, DateTime date)
@@ -82,12 +82,12 @@ namespace FnacDarty.JobInterview.Stock
             };
         }
 
-        private IReadOnlyList<GridColumn> GetColumnsForForProductStock(string productId)
+        private IReadOnlyList<GridColumn> GetColumnsForProductStock(string productId)
         {
             return new GridColumn[] { new GridColumn(productId) };
         }
 
-        private IReadOnlyList<GridColumn> GetColumnsForForAllProductStocks(ICollection<string> keys)
+        private IReadOnlyList<GridColumn> GetColumnsForAllProductStocks(ICollection<string> keys)
         {
             return keys.Select(item => new GridColumn(item)).ToList();
         }

@@ -11,7 +11,7 @@ namespace FnacDarty.JobInterview.Stock.Views
         private readonly IReadOnlyList<GridColumn> _columns;
         private IEnumerable _dataSource;
 
-        public GridView(IReadOnlyList<GridColumn> columns, object dataSource = null)
+        public GridView(IReadOnlyList<GridColumn> columns)
         {
             if(columns == null) throw new ArgumentNullException(nameof(columns));
             SetColumnsOrdinal(columns);
